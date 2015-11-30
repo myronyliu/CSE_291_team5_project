@@ -14,10 +14,31 @@ global cone,gesture,waving
 bridge = CvBridge()
 
 
+def sendCone(**args):
+    global cone
+    m = CVMessage()
+    m.x = args['x']
+    m.y = args['y']
+    m.height = args['height']
+    cone.publish(m)
+
+def sendWaving(**args):
+    global waving
+    m = CVMessage()
+    m.x = args['x']
+    m.y = args['y']
+    m.height = args['height']
+    waving.publish(m)
+
+
+def sendGesture(x):
+    global gesture
+    gesture.publish(x)
+
+
 
 
 def camera_callback(data):
-    global cone,gesture,waving  # just use cone.publish()
     cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
     # TODO:
     # analyze the cv_image
