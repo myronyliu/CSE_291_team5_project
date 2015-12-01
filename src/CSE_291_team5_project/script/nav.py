@@ -12,21 +12,66 @@ driver = None
 state = C.STATE_Looking_For_Waving
 
 
+def stop_for_cone(width = None, height = None):
+    if not height:
+        return True
+
+    if height >= C.STOP_THRESHOLD_HEIGHT_CONE:
+        return True
+    else:
+        return False
+    
+
+
+
+
+def stop_for_waving(width = None, height = None):
+    if not height:
+        return True
+    if height >= C.STOP_THRESHOLD_HEIGHT_WAVING:
+        return True
+    else:
+        return False
+
+def get_drive_action(x,y):
+    global driver
+    if x >= C.STRAIGHT_THRESHOLD_X:
+        driver.publish(C.MOVE_LEFT)
+    elif x <= -C.STRAIGHT_THRESHOLD_X:
+        driver.publish(C.MOVE_RIGHT)
+    else:        
+        driver.publish(C.MOVE_UP)
+    
+
+
 
 def cv_cone_callback(msg):
     global driver,state
+    d = msg.data
+    x = d.x
+    y = d.y
+    w = d.width
+    h = d.height
     if state == C.STATE_Looking_For_Cone:        
-        # TODO:
-        # the logic
-        pass
+        if stop_for_cone(width=w,height=h):
+            driver.publish(C.STOP)
+        else:
+            driver.publish(get_drive_action(x,y))
 
 
 def cv_waving_callback(msg):
     global driver,state
+    d = msg.data
+    x = d.x
+    y = d.y
+    w = d.width
+    h = d.height
     if state == C.STATE_Looking_For_Waving:        
-        # TODO:
-        # the logic
-        pass
+        if stop_for_waving(width=w,height=h):
+            state = C.STATE_Waiting_For_Comand
+            driver.publish(C.STOP)
+        else:
+            driver.publish(get_drive_action(x,y))
 
 
 def cv_gesture_callback(msg):

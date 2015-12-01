@@ -1,4 +1,5 @@
 Header header
+float32 width
 float32 height
 float32 x
 float32 y

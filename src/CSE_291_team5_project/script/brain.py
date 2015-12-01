@@ -14,20 +14,20 @@ global cone,gesture,waving
 bridge = CvBridge()
 
 
-def sendCone(**args):
+def sendCone(x=None,y=None,height=None):
     global cone
     m = CVMessage()
-    m.x = args['x']
-    m.y = args['y']
-    m.height = args['height']
+    m.x = x
+    m.y = y
+    m.height = height
     cone.publish(m)
 
-def sendWaving(**args):
+def sendWaving(x=None,y=None,height=None):
     global waving
     m = CVMessage()
-    m.x = args['x']
-    m.y = args['y']
-    m.height = args['height']
+    m.x = x
+    m.y = y
+    m.height = height
     waving.publish(m)
 
 
