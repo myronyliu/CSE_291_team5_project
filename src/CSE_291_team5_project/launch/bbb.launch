@@ -1,0 +1,14 @@
+<launch>
+    <env name = "GSCAM_CONFIG" value = "v4l2src device=/dev/video0 !
+                                        video/x-raw-rgb ! ffmpegcolorspace" />
+    <!-- <env name="ROS_MASTER_URI" value="http://master_pc:11311" /> -->
+    <node pkg = "gscam" type = "gscam" name = "web_cam">
+        <param name = "camera_name" value = "web_cam" />
+        <remap from = "camera/image_raw" to = "irobot/cv/raw_data" />
+    </node>
+    
+    
+    <node pkg ="CSE_291_team5_project"  type="driver.py"  name="driver" output="screen" />
+    
+    <node pkg ="CSE_291_team5_project"  type="nav.py"  name="nav" output="screen" />
+</launch>

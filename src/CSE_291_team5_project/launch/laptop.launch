@@ -1,0 +1,5 @@
+<launch>
+    
+    <node pkg ="CSE_291_team5_project"  type="brain.py"  name="brain" output="screen" />
+
+</launch>
