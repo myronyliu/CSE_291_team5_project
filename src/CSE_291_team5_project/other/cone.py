@@ -7,7 +7,7 @@ while(1):
     _, frame = cap.read()
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
-    lower_green = np.array([40, 20, 20], dtype=np.uint8)
+    lower_green = np.array([40, 20, 0], dtype=np.uint8)
     upper_green = np.array([100, 255, 255], dtype=np.uint8)
 
     mask = cv2.inRange(hsv, lower_green, upper_green).astype(np.uint8)
@@ -19,20 +19,26 @@ while(1):
 
     allContours, hierarchy = cv2.findContours(denoised, cv2.cv.CV_RETR_EXTERNAL, cv2.cv.CV_CHAIN_APPROX_SIMPLE)
 
-    if (len(allContours) == 0):
+    if len(allContours) == 0:
         continue
 
-    contour = allContours[0]
-    x, y, w, h = cv2.boundingRect(contour)
-    cv2.drawContours(denoised, contour, -1, (255,0,0), 4)
-    cv2.rectangle(denoised, (x, y), (x+w, y+h), (255,255,255),4)
+    largestContour = allContours[0]
+    largestArea = cv2.contourArea(largestContour)
 
+    for i in range (1, len(allContours)):
+        area = cv2.contourArea(allContours[i])
+        if area > largestArea:
+            largestContour = allContours[i]
+            largestArea = area
 
-#    cv2.imshow('raw', frame)
-    cv2.imshow('mask', denoised)
-#
-#    if (w*h < 256):
-#        print "no cone"
+    x, y, w, h = cv2.boundingRect(largestContour)
+    #cv2.drawContours(denoised, largestContour, -1, (255,0,0), 4)
+    cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 4)
+
+    cv2.imshow('raw', frame)
+
+    if (w*h < 256):
+        print "no cone"
 #    else:
 #	    xMid =  2.0*(x + (w / 2.0)) / cv_image.cols - 1.0
 #	    yMid = -2.0*(y + (h / 2.0)) / cv_image.rows
