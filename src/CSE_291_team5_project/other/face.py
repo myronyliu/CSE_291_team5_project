@@ -1,8 +1,10 @@
 import cv2
 import sys
 
+import os
+__dirname = os.path.dirname(os.path.abspath(__file__))
 
-cascPath = sys.argv[1]
+cascPath = os.path.join(__dirname,'face.xml')
 faceCascade = cv2.CascadeClassifier(cascPath)
 
 video_capture = cv2.VideoCapture(0)

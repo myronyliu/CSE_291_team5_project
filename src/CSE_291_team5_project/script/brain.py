@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import speech_recognition as sr
 import rospy
 import pici
 import serial
@@ -8,98 +9,67 @@ from sensor_msgs.msg import Image
 from CSE_291_team5_project.msg import CVMessage # m = CVMessage(), m.x = 12, m.y = 232, m.height = 232; cone.publish(m)
 import cv2
 from cv_bridge import CvBridge, CvBridgeError
+import cv_cone,cv_face,command
 
-global cone,gesture,waving
+global cone,face,speech
+cone = face = speech = None
 
 bridge = CvBridge()
 
 
-def sendCone(x=None,y=None,height=None):
-    global cone
-    m = CVMessage()
-    m.x = x
-    m.y = y
-    m.height = height
+def sendCone(m):
+    global cone    
     cone.publish(m)
-
-def sendWaving(x=None,y=None,height=None):
-    global waving
-    m = CVMessage()
-    m.x = x
-    m.y = y
-    m.height = height
-    waving.publish(m)
+def sendFace(m):
+    global face
+    face.publish(m)
 
 
-def sendGesture(x):
-    global gesture
-    gesture.publish(x)
-
-def scaled_rect_coords(px, py, pw, ph, nRows, nCols):
-    xMid =  2.0*(px + pw/2.0)/nRows - 1.0
-    yMid = -2.0*(py + ph/2.0)/nCols + 1.0
-    return (xMid, yMid, ph / nRows)
+not_found_msg = CVMessage()
+not_found_msg.height = C.ITEM_NOT_FOUND
 
 
-def get_cone(cv_image):
 
-    msg = CVMessage()
-    msg.x = 0
-    msg.y = 0
-    msg.height = 0
-
-    hsv = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
-
-    lower_green = np.array([40, 20, 0], dtype=np.uint8)
-    upper_green = np.array([100, 255, 255], dtype=np.uint8)
-
-    mask = cv2.inRange(hsv, lower_green, upper_green).astype(np.uint8)
-
-    kernel = np.ones((11,11), np.uint8)
-
-    denoised = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-    denoised = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-
-    allContours, hierarchy = cv2.findContours(denoised, cv2.cv.CV_RETR_EXTERNAL, cv2.cv.CV_CHAIN_APPROX_SIMPLE)
-
-    if len(allContours) == 0:
-        return msg
-
-    largestContour = allContours[0]
-    largestArea = cv2.contourArea(largestContour)
-
-    for i in range (1, len(allContours)):
-        area = cv2.contourArea(allContours[i])
-        if area > largestArea:
-            largestContour = allContours[i]
-            largestArea = area
-
-    x, y, w, h = cv2.boundingRect(largestContour)
-
-    #cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 4)
-    #cv2.imshow('raw', hsv)
-
-    if (w*h > 256):
-        nRows_nCols = cv_image.shape
-        msg.x, msg.y, msg.height = scaled_rect_coords(x, y, w, h, nRows_nCols[0], nRows_nCols[1])
-
-    return msg;
-
-def get_gesture(cv_image):
     
-
 def camera_callback(data):
     cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
-	cone_msg = get_cone(cv_image)
-	sendCone(cone_msg.x,cone_msg.y,cone_msg.height)
-    get_gesture(cv_image)
+    cone_msg = cv_cone.get_cone(cv_image)
+    face_msg = cv_face.get_face(cv_image)
+    if not cone_msg:        
+        sendCone(cone_msg)
+    else:
+        sendCone(not_found_msg)
+    if not face_msg:
+        sendFace(face_msg)
+    else:
+        sendFace(not_found_msg)
+
+
+
+
+
+r = sr.Recognizer()
+while(1):    
+    with sr.Microphone() as source:
+        audio = r.listen(source)
+    try:            
+        text = r.recognize_google(audio)
+        cmd = command.parse(text)        
+        if not cmd:            
+            speech.publish(cmd)
+    except:
+        pass
+        
+
+    
+        
 
 def brain():
-    global cone,gesture,waving
+    global cone,face,speech
     rospy.Subscriber(C.CAMERA_ADDR,Image, camera_callback)
     cone = rospy.Publisher(C.CV_CONE_ADDR, CVMessage,queue_size=20)
-    gesture = rospy.Publisher(C.CV_GESTURE_ADDR, Int8,queue_size=20)
-    waving = rospy.Publisher(C.CV_WAVING_ADDR,CVMessage,queue_size=20)
+    face = rospy.Publisher(C.CV_FACE_ADDR, CVMessage, queue_size=20)
+    speech = rospy.Publisher(C.SPEECH_COMMAND_ADDR, Int8, queue_size=20)
     
 
 
