@@ -35,6 +35,11 @@ def sendGesture(x):
     global gesture
     gesture.publish(x)
 
+def scaled_rect_coords(px, py, pw, ph, nRows, nCols):
+    xMid =  2.0*(px + pw/2.0)/nRows - 1.0
+    yMid = -2.0*(py + ph/2.0)/nCols + 1.0
+    return (xMid, yMid, ph / nRows)
+
 
 def get_cone(cv_image):
 
@@ -70,16 +75,13 @@ def get_cone(cv_image):
             largestArea = area
 
     x, y, w, h = cv2.boundingRect(largestContour)
-    cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 4)
 
+    #cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 4)
     #cv2.imshow('raw', hsv)
 
     if (w*h > 256):
-        xMid =  2.0*(x + (w / 2.0)) / cv_image.cols - 1.0
-        yMid = -2.0*(y + (h / 2.0)) / cv_image.rows
-        msg.x = xMid
-        msg.y = yMid
-        msg.height = h
+        nRows_nCols = cv_image.shape
+        msg.x, msg.y, msg.height = scaled_rect_coords(x, y, w, h, nRows_nCols[0], nRows_nCols[1])
 
     return msg;
 
