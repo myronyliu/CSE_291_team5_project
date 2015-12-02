@@ -36,16 +36,61 @@ def sendGesture(x):
     gesture.publish(x)
 
 
+def get_cone(cv_image):
 
+    msg = CVMessage()
+    msg.x = 0
+    msg.y = 0
+    msg.height = 0
+
+    hsv = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
+
+    lower_green = np.array([40, 20, 0], dtype=np.uint8)
+    upper_green = np.array([100, 255, 255], dtype=np.uint8)
+
+    mask = cv2.inRange(hsv, lower_green, upper_green).astype(np.uint8)
+
+    kernel = np.ones((11,11), np.uint8)
+
+    denoised = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    denoised = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+
+    allContours, hierarchy = cv2.findContours(denoised, cv2.cv.CV_RETR_EXTERNAL, cv2.cv.CV_CHAIN_APPROX_SIMPLE)
+
+    if len(allContours) == 0:
+        return msg
+
+    largestContour = allContours[0]
+    largestArea = cv2.contourArea(largestContour)
+
+    for i in range (1, len(allContours)):
+        area = cv2.contourArea(allContours[i])
+        if area > largestArea:
+            largestContour = allContours[i]
+            largestArea = area
+
+    x, y, w, h = cv2.boundingRect(largestContour)
+    cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 4)
+
+    #cv2.imshow('raw', hsv)
+
+    if (w*h > 256):
+        xMid =  2.0*(x + (w / 2.0)) / cv_image.cols - 1.0
+        yMid = -2.0*(y + (h / 2.0)) / cv_image.rows
+        msg.x = xMid
+        msg.y = yMid
+        msg.height = h
+
+    return msg;
+
+def get_gesture(cv_image):
+    
 
 def camera_callback(data):
     cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
-    # TODO:
-    # analyze the cv_image
-    pass
-
-
-
+	cone_msg = get_cone(cv_image)
+	sendCone(cone_msg.x,cone_msg.y,cone_msg.height)
+    get_gesture(cv_image)
 
 def brain():
     global cone,gesture,waving
