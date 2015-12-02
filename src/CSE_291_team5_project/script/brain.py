@@ -18,7 +18,8 @@ bridge = CvBridge()
 
 
 def sendCone(m):
-    global cone    
+    global cone
+    
     cone.publish(m)
 def sendFace(m):
     global face
@@ -30,16 +31,23 @@ not_found_msg.height = C.ITEM_NOT_FOUND
 
 
 
-    
+# import cv2
+# cv2.startWindowThread()
+# cv2.namedWindow("preview")
 def camera_callback(data):
+    
     cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
-    cone_msg = cv_cone.get_cone(cv_image)
-    face_msg = cv_face.get_face(cv_image)
-    if not cone_msg:        
+    # cv2.imshow('preview',cv_image)
+    
+    cone_msg = cv_cone.get_cone(cv_image.copy())
+    face_msg = cv_face.get_face(cv_image.copy())
+    if cone_msg:
+        # print cone_msg
         sendCone(cone_msg)
     else:
         sendCone(not_found_msg)
-    if not face_msg:
+    if face_msg:
+        # print face_msg
         sendFace(face_msg)
     else:
         sendFace(not_found_msg)
@@ -48,17 +56,6 @@ def camera_callback(data):
 
 
 
-r = sr.Recognizer()
-while(1):    
-    with sr.Microphone() as source:
-        audio = r.listen(source)
-    try:            
-        text = r.recognize_google(audio)
-        cmd = command.parse(text)        
-        if not cmd:            
-            speech.publish(cmd)
-    except:
-        pass
         
 
     
@@ -66,12 +63,42 @@ while(1):
 
 def brain():
     global cone,face,speech
+    rospy.init_node('brain')    
     rospy.Subscriber(C.CAMERA_ADDR,Image, camera_callback)
-    cone = rospy.Publisher(C.CV_CONE_ADDR, CVMessage,queue_size=20)
-    face = rospy.Publisher(C.CV_FACE_ADDR, CVMessage, queue_size=20)
-    speech = rospy.Publisher(C.SPEECH_COMMAND_ADDR, Int8, queue_size=20)
-    
+    cone = rospy.Publisher(C.CV_CONE_ADDR, CVMessage,queue_size=10)
+    face = rospy.Publisher(C.CV_FACE_ADDR, CVMessage, queue_size=10)
+    speech = rospy.Publisher(C.SPEECH_COMMAND_ADDR, Int8, queue_size=10)
 
+    # rospy.spin()
+
+
+    while(1):
+        try:
+            m = sr.Microphone()    
+            r = sr.Recognizer()
+            with m as source:
+                # audio = r.listen(source)
+        
+                # r.adjust_for_ambient_noise(source)
+                # print("Set minimum energy threshold to {}".format(r.energy_threshold))
+        
+            
+                print "listening:"
+                audio = r.listen(source)
+                text = r.recognize_google(audio)
+                print "=================================="
+                print text
+                print "=================================="
+                cmd = command.parse(text)
+                print "cmd is ", cmd
+                if cmd:
+                    print "publish cmd"
+                    speech.publish(cmd)
+        except:
+            pass
+            
+    
+    
 
 
 

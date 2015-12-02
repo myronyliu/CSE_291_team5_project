@@ -81,7 +81,7 @@ def start_driver(sPort):
         
 
     
-    rospy.init_node('driver', anonymous=True)
+    rospy.init_node('driver')
     rospy.Subscriber(C.DRIVER_ADDR, Int8, topic_key_callback);
     rospy.spin()
     
@@ -89,8 +89,10 @@ def start_driver(sPort):
      
 if __name__ == '__main__':
     # mprint(str(sys.argv))
-    if len(sys.argv) < 4:
-        start_driver('/dev/ttyUSB0');
-    else:
-        start_driver(sys.argv[1]);
-        
+    try:        
+        if len(sys.argv) < 4:
+            start_driver('/dev/ttyUSB0');
+        else:
+            start_driver(sys.argv[1]);
+    except Exception as e:        
+        print e

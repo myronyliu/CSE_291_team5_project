@@ -11,12 +11,20 @@ from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
 import util
 
-def get_cone(cv_image):
+
+
+if C.Debug:    
+    cv2.startWindowThread()
+    cv2.namedWindow("cone")
+
+
+
+def get_cone(cv_image):    
     msg = CVMessage()
     msg.x = 0
     msg.y = 0
     msg.height = 0
-
+    
     hsv = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
     lower_green = np.array([40, 20, 0], dtype=np.uint8)
     upper_green = np.array([100, 255, 255], dtype=np.uint8)
@@ -41,7 +49,10 @@ def get_cone(cv_image):
                 largestArea = area
 
         x, y, w, h = cv2.boundingRect(largestContour)
-
+        
+        if C.Debug:            
+            cv2.rectangle(cv_image, (x, y), (x+w, y+h), (0, 255, 0), 4)
+            cv2.imshow('cone',cv_image)
         if (w*h > 256):
             nRows_nCols = cv_image.shape
             msg.x, msg.y, msg.height = util.scaled_rect_coords(x, y, w, h, nRows_nCols[0], nRows_nCols[1])        

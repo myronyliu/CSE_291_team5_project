@@ -46,26 +46,26 @@ def random_turn():
     
 
 
-def cv_cone_callback(msg):
-    global driver,state
-    d = msg.data
-    if state == C.STATE_DILIVER:
+def cv_cone_callback(d):
+    global driver,state    
+    if state == C.STATE_DELIVER:
         if d.height == C.ITEM_NOT_FOUND:
             random_turn()
         
         if stop_for_cone(width=d.width,height=d.height):
+            print "close to the cone"
             driver.publish(C.STOP)
         else:
             driver.publish(get_drive_action(d.x,d.y))
 
-def cv_face_callback(msg):
+def cv_face_callback(d):
     global driver,state
-    d = msg.data
-    if state == C.STATE_COME:
+    if state == C.STATE_COME:        
         if d.height == C.ITEM_NOT_FOUND:
             random_turn()
             
         if stop_for_face(width=d.width,height=d.height):
+            print "state = wait_for_command"
             state = C.STATE_WAIT_CMD
             driver.publish(C.STOP)
         else:
@@ -75,24 +75,31 @@ def cv_face_callback(msg):
             
 def speech_command_callback(msg):
     global state
+    print "==============nav.py================="
+    print "recieve msg"
+    
     cmd = msg.data
     if cmd == C.COMMAND_COME_HERE:
+        print "state = comming"
         state = C.STATE_COME
     elif cmd == C.COMMAND_STOP:
+        print "state = stop"
         state = C.STATE_LISTEN
-    elif cmd == C.COMMAND_DILIVER and state == C.STATE_WAIT_CMD:
-        state = C.STATE_DILIVER
+    elif cmd == C.COMMAND_DELIVER and state == C.STATE_WAIT_CMD:
+        print "state = deliver"                
+        state = C.STATE_DELIVER
 
-            
+
+        
 
 def nav():
     global driver
-    rospy.init_node('nav', anonymous=True)
+    rospy.init_node('nav')
     driver = rospy.Publisher(C.DRIVER_ADDR, Int8, queue_size=20);
 
     rospy.Subscriber(C.CV_CONE_ADDR,CVMessage, cv_cone_callback)
     rospy.Subscriber(C.CV_FACE_ADDR, CVMessage, cv_face_callback)
-    rospy.Subscriber(C.SPEECH_COMMAND_ADDR, CVMessage, speech_command_callback)
+    rospy.Subscriber(C.SPEECH_COMMAND_ADDR, Int8, speech_command_callback)
     
     
     rospy.spin()
