@@ -32,26 +32,37 @@ def get_face(frame):
 
     
     if len(faces) == 0:
+        if C.Debug:
+            # print frame
+            cv2.imshow('face', frame)            
         return None
     else:        
         # Draw a rectangle around the faces
         mx = my = mh = mw = 0
-        for (x, y, w, h) in faces:
-            if C.Debug:                
-                cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        mh = 1
+        mw = 256
+        for (x, y, w, h) in faces:            
             if w*h > mh*mw:
+                if C.Debug:                
+                    cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
                 mx = x
                 my = y
                 mh = h
                 mw = w
                 
         if C.Debug:
-            print frame
-            cv2.imshow('face', frame)
-            
+            # print frame
+            cv2.imshow('face', frame)            
+        if mx == my and mx == 0:
+            return None
+        
         msg = CVMessage()
         shape = frame.shape
-        msg.x,msg.y,msg.height = util.scaled_rect_coords(mx,my,mw,mh,shape[0],shape[1])
+        msg.x,msg.y,msg.width,msg.height = util.scaled_rect_coords(mx,my,mw,mh,shape[0],shape[1])
+        if C.Debug:            
+            # print "face height: ",msg.height
+            pass
+            
         return msg
         
     

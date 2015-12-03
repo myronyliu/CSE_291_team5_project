@@ -9,6 +9,11 @@ faceCascade = cv2.CascadeClassifier(cascPath)
 
 video_capture = cv2.VideoCapture(0)
 
+def scaled_rect_coords(px, py, pw, ph, nCols, nRows):
+    xMid =  2.0*(px + pw/2.0)/nRows - 1.0
+    yMid = -2.0*(py + ph/2.0)/nCols + 1.0
+    return (xMid, yMid, (ph + 0.0)/ nRows)
+
 while True:
     # Capture frame-by-frame
     ret, frame = video_capture.read()
@@ -26,7 +31,7 @@ while True:
     # Draw a rectangle around the faces
     for (x, y, w, h) in faces:
         cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
-
+        
     # Display the resulting frame
     cv2.imshow('Video', frame)
 

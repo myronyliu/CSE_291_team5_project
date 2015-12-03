@@ -67,16 +67,16 @@ def start_driver(sPort):
             pici.turn(ser,ANGULARCHANGE,cw=True)
         if d == C.FULL:
             cmd_full(ser);
-            print "full mode"
+            # print "full mode"
         if d == C.SONG:
             pici.playSongStart(ser)
             pici.playSongStop(ser)            
         if d == C.PASSIVE:
             cmd_passive(ser)
-            print "passive mode"
+            # print "passive mode"
         if d == C.STOP:
             pici.stop(ser);
-            print "now stop"
+            # print "now stop"
         
         
 

@@ -65,9 +65,9 @@ def brain():
     global cone,face,speech
     rospy.init_node('brain')    
     rospy.Subscriber(C.CAMERA_ADDR,Image, camera_callback)
-    cone = rospy.Publisher(C.CV_CONE_ADDR, CVMessage,queue_size=10)
-    face = rospy.Publisher(C.CV_FACE_ADDR, CVMessage, queue_size=10)
-    speech = rospy.Publisher(C.SPEECH_COMMAND_ADDR, Int8, queue_size=10)
+    cone = rospy.Publisher(C.CV_CONE_ADDR, CVMessage,queue_size=4)
+    face = rospy.Publisher(C.CV_FACE_ADDR, CVMessage, queue_size=4)
+    speech = rospy.Publisher(C.SPEECH_COMMAND_ADDR, Int8, queue_size=4)
 
     # rospy.spin()
 

@@ -24,14 +24,16 @@ def stop_for_cone(width = None, height = None):
 def get_drive_action(x,y):
     global driver
     if x >= C.STRAIGHT_THRESHOLD_X:
-        driver.publish(C.MOVE_LEFT)
+        # driver.publish(C.MOVE_RIGHT)
+        random_turn('right')
     elif x <= -C.STRAIGHT_THRESHOLD_X:
-        driver.publish(C.MOVE_RIGHT)
+        # driver.publish(C.MOVE_LEFT)
+        random_turn('left')
     else:        
         driver.publish(C.MOVE_UP)
 
         
-def stop_for_face(width = None, height = None):
+def stop_for_face(width = None,height = None):
     if not height:
         return True
     if height >= C.STOP_THRESHOLD_HEIGHT_FACE:
@@ -39,21 +41,39 @@ def stop_for_face(width = None, height = None):
     else:
         return False
 
-
-def random_turn():
+import random
+def random_turn(direction = None):
     global driver
-    driver.publish(C.MOVE_LEFT)
-    
+    # driver.publish(C.STOP)
+    if not direction:        
+        if random.randint(1,10) == 1:        
+            driver.publish(C.MOVE_LEFT)
+        else:
+            driver.publish(C.STOP)
+    elif direction == "right":
+        if random.randint(1,10) <= 5:        
+            driver.publish(C.MOVE_RIGHT)
+        else:
+            driver.publish(C.STOP)
+    elif direction == "left":        
+        if random.randint(1,10) <= 5:        
+            driver.publish(C.MOVE_LEFT)
+        else:
+            driver.publish(C.STOP)
 
 
 def cv_cone_callback(d):
     global driver,state    
     if state == C.STATE_DELIVER:
         if d.height == C.ITEM_NOT_FOUND:
+            print "no cone"
             random_turn()
-        
+            return
+            # random_turn()
+            
         if stop_for_cone(width=d.width,height=d.height):
             print "close to the cone"
+            state = C.STATE_LISTEN
             driver.publish(C.STOP)
         else:
             driver.publish(get_drive_action(d.x,d.y))
@@ -62,7 +82,10 @@ def cv_face_callback(d):
     global driver,state
     if state == C.STATE_COME:        
         if d.height == C.ITEM_NOT_FOUND:
+            print "no face"
             random_turn()
+            return
+            # random_turn()
             
         if stop_for_face(width=d.width,height=d.height):
             print "state = wait_for_command"
@@ -74,7 +97,7 @@ def cv_face_callback(d):
 
             
 def speech_command_callback(msg):
-    global state
+    global state,driver
     print "==============nav.py================="
     print "recieve msg"
     
@@ -83,6 +106,7 @@ def speech_command_callback(msg):
         print "state = comming"
         state = C.STATE_COME
     elif cmd == C.COMMAND_STOP:
+        driver.publish(C.STOP)
         print "state = stop"
         state = C.STATE_LISTEN
     elif cmd == C.COMMAND_DELIVER and state == C.STATE_WAIT_CMD:

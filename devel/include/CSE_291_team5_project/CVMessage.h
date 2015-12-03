@@ -26,12 +26,14 @@ struct CVMessage_
 
   CVMessage_()
     : header()
+    , width(0.0)
     , height(0.0)
     , x(0.0)
     , y(0.0)  {
     }
   CVMessage_(const ContainerAllocator& _alloc)
     : header(_alloc)
+    , width(0.0)
     , height(0.0)
     , x(0.0)
     , y(0.0)  {
@@ -41,6 +43,9 @@ struct CVMessage_
 
    typedef  ::std_msgs::Header_<ContainerAllocator>  _header_type;
   _header_type header;
+
+   typedef float _width_type;
+  _width_type width;
 
    typedef float _height_type;
   _height_type height;
@@ -128,12 +133,12 @@ struct MD5Sum< ::CSE_291_team5_project::CVMessage_<ContainerAllocator> >
 {
   static const char* value()
   {
-    return "468f02c51dacb10f03d17708b0f2633e";
+    return "c6d9aa4dd16dec75d285edda4b2da7c7";
   }
 
   static const char* value(const ::CSE_291_team5_project::CVMessage_<ContainerAllocator>&) { return value(); }
-  static const uint64_t static_value1 = 0x468f02c51dacb10fULL;
-  static const uint64_t static_value2 = 0x03d17708b0f2633eULL;
+  static const uint64_t static_value1 = 0xc6d9aa4dd16dec75ULL;
+  static const uint64_t static_value2 = 0xd285edda4b2da7c7ULL;
 };
 
 template<class ContainerAllocator>
@@ -153,9 +158,11 @@ struct Definition< ::CSE_291_team5_project::CVMessage_<ContainerAllocator> >
   static const char* value()
   {
     return "Header header\n\
+float32 width\n\
 float32 height\n\
 float32 x\n\
 float32 y\n\
+\n\
 \n\
 ================================================================================\n\
 MSG: std_msgs/Header\n\
@@ -193,6 +200,7 @@ namespace serialization
     template<typename Stream, typename T> inline static void allInOne(Stream& stream, T m)
     {
       stream.next(m.header);
+      stream.next(m.width);
       stream.next(m.height);
       stream.next(m.x);
       stream.next(m.y);
@@ -217,6 +225,8 @@ struct Printer< ::CSE_291_team5_project::CVMessage_<ContainerAllocator> >
     s << indent << "header: ";
     s << std::endl;
     Printer< ::std_msgs::Header_<ContainerAllocator> >::stream(s, indent + "  ", v.header);
+    s << indent << "width: ";
+    Printer<float>::stream(s, indent + "  ", v.width);
     s << indent << "height: ";
     Printer<float>::stream(s, indent + "  ", v.height);
     s << indent << "x: ";

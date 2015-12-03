@@ -26,8 +26,8 @@ def get_cone(cv_image):
     msg.height = 0
     
     hsv = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
-    lower_green = np.array([40, 20, 0], dtype=np.uint8)
-    upper_green = np.array([100, 255, 255], dtype=np.uint8)
+    lower_green = np.array([60, 50, 0], dtype=np.uint8)
+    upper_green = np.array([100, 200, 200], dtype=np.uint8)
     mask = cv2.inRange(hsv, lower_green, upper_green).astype(np.uint8)
     kernel = np.ones((11,11), np.uint8)
     denoised = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
@@ -37,6 +37,8 @@ def get_cone(cv_image):
     allContours, hierarchy = cv2.findContours(denoised, cv2.cv.CV_RETR_EXTERNAL, cv2.cv.CV_CHAIN_APPROX_SIMPLE)
 
     if len(allContours) == 0:
+        if C.Debug:            
+            cv2.imshow('cone',cv_image)
         return None
     else:        
         largestContour = allContours[0]
@@ -53,9 +55,9 @@ def get_cone(cv_image):
         if C.Debug:            
             cv2.rectangle(cv_image, (x, y), (x+w, y+h), (0, 255, 0), 4)
             cv2.imshow('cone',cv_image)
-        if (w*h > 256):
+        if (w*h > 512):
             nRows_nCols = cv_image.shape
-            msg.x, msg.y, msg.height = util.scaled_rect_coords(x, y, w, h, nRows_nCols[0], nRows_nCols[1])        
+            msg.x, msg.y,msg.width, msg.height = util.scaled_rect_coords(x, y, w, h, nRows_nCols[0], nRows_nCols[1])        
         else:
             return None
     
